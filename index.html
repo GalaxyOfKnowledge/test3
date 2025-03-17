@@ -164,6 +164,13 @@
       });
     }
 
+    function enemyFire() {
+      if (enemies.length > 0) {
+        const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+        enemyBullets.push({ x: randomEnemy.x + 12, y: randomEnemy.y + 30 });
+      }
+    }
+
     function spawnEnemies() {
       enemies.length = 0;
       for (let i = 0; i < 5; i++) {
