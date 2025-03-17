@@ -7,7 +7,9 @@
   <style>
     body {
       font-family: 'Press Start 2P', cursive;
-      background-color: black;
+      background-image: url('https://www.nasa.gov/sites/default/files/thumbnails/image/pia12235.jpg');
+      background-size: cover;
+      background-position: center;
       color: white;
       text-align: center;
       padding-top: 50px;
@@ -41,6 +43,12 @@
       background-color: gray;
       color: white;
     }
+
+    canvas {
+      display: none;
+      margin-top: 20px;
+      background-color: black;
+    }
   </style>
 </head>
 <body>
@@ -51,9 +59,24 @@
     <button class="btn" onclick="openSettings()">Settings</button>
   </div>
 
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+
   <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
     function startGame() {
-      alert("Starting game...");
+      document.querySelector('.menu').style.display = 'none';
+      canvas.style.display = 'block';
+      drawGame();
+    }
+
+    function drawGame() {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      ctx.font = '20px Arial';
+      ctx.fillText('Space Invaders Game', 200, 200);
     }
 
     function showHighScore() {
