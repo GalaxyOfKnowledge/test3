@@ -65,19 +65,94 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    const player = {
+      x: canvas.width / 2 - 15,
+      y: canvas.height - 40,
+      width: 30,
+      height: 30,
+      speed: 5
+    };
+
+    const bullets = [];
+    const enemies = [];
+
     function startGame() {
       document.querySelector('.menu').style.display = 'none';
       canvas.style.display = 'block';
-      drawGame();
+      spawnEnemies();
+      gameLoop();
     }
 
-    function drawGame() {
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      ctx.font = '20px Arial';
-      ctx.fillText('Space Invaders Game', 200, 200);
+    function drawPlayer() {
+      ctx.fillStyle = 'lime';
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
+
+    function drawBullets() {
+      ctx.fillStyle = 'yellow';
+      bullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, 5, 10);
+      });
+    }
+
+    function drawEnemies() {
+      ctx.fillStyle = 'red';
+      enemies.forEach(enemy => {
+        ctx.fillRect(enemy.x, enemy.y, 30, 30);
+      });
+    }
+
+    function moveBullets() {
+      bullets.forEach((bullet, index) => {
+        bullet.y -= 5;
+        if (bullet.y < 0) bullets.splice(index, 1);
+      });
+    }
+
+    function spawnEnemies() {
+      for (let i = 0; i < 5; i++) {
+        enemies.push({ x: i * 100 + 50, y: 50 });
+      }
+    }
+
+    function moveEnemies() {
+      enemies.forEach(enemy => {
+        enemy.y += 0.5;
+      });
+    }
+
+    function handleCollisions() {
+      bullets.forEach((bullet, bulletIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+          if (
+            bullet.x < enemy.x + 30 &&
+            bullet.x + 5 > enemy.x &&
+            bullet.y < enemy.y + 30 &&
+            bullet.y + 10 > enemy.y
+          ) {
+            bullets.splice(bulletIndex, 1);
+            enemies.splice(enemyIndex, 1);
+          }
+        });
+      });
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      drawBullets();
+      drawEnemies();
+      moveBullets();
+      moveEnemies();
+      handleCollisions();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && player.x > 0) player.x -= player.speed;
+      if (e.key === 'ArrowRight' && player.x < canvas.width - player.width) player.x += player.speed;
+      if (e.key === ' ') bullets.push({ x: player.x + 12, y: player.y });
+    });
 
     function showHighScore() {
       alert("Highscore coming soon!");
