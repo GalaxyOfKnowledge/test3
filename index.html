@@ -56,6 +56,10 @@
       width: 33%;
       height: 100%;
       background-color: black;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
   </style>
 </head>
@@ -86,7 +90,8 @@
 
     const keys = {
       left: false,
-      right: false
+      right: false,
+      shooting: false
     };
 
     let lastShotTime = 0;
@@ -166,6 +171,13 @@
       });
     }
 
+    function shootBullet() {
+      if (Date.now() - lastShotTime > bulletCooldown) {
+        bullets.push({ x: player.x + 12, y: player.y });
+        lastShotTime = Date.now();
+      }
+    }
+
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPlayer();
@@ -173,23 +185,24 @@
       drawEnemies();
       moveBullets();
       handleCollisions();
+
       if (keys.left && player.x > 0) player.x -= player.speed;
       if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+      if (keys.shooting) shootBullet();
+
       requestAnimationFrame(gameLoop);
     }
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') keys.left = true;
       if (e.key === 'ArrowRight') keys.right = true;
-      if (e.key === ' ' && Date.now() - lastShotTime > bulletCooldown) {
-        bullets.push({ x: player.x + 12, y: player.y });
-        lastShotTime = Date.now();
-      }
+      if (e.key === ' ') keys.shooting = true;
     });
 
     document.addEventListener('keyup', (e) => {
       if (e.key === 'ArrowLeft') keys.left = false;
       if (e.key === 'ArrowRight') keys.right = false;
+      if (e.key === ' ') keys.shooting = false;
     });
 
     function showHighScore() {
