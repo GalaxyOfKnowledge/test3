@@ -53,8 +53,7 @@
     canvas {
       display: none;
       aspect-ratio: 16 / 9;
-      width: 90%;
-      max-width: 1200px;
+      width: 33%;
       background-color: black;
     }
   </style>
@@ -90,7 +89,7 @@
     };
 
     let lastShotTime = 0;
-    const bulletCooldown = 300; // Cooldown in milliseconds
+    const bulletCooldown = 100; // Faster cooldown in milliseconds
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth;
@@ -136,8 +135,11 @@
     }
 
     function spawnEnemies() {
+      enemies.length = 0;
       for (let i = 0; i < 5; i++) {
-        enemies.push({ x: i * 100 + 50, y: 50 });
+        for (let j = 0; j < 8; j++) {
+          enemies.push({ x: j * 60 + 30, y: i * 40 + 30 });
+        }
       }
     }
 
@@ -158,6 +160,12 @@
           ) {
             bullets.splice(bulletIndex, 1);
             enemies.splice(enemyIndex, 1);
+
+            if (enemies.length === 0) {
+              alert("You Win!");
+              document.querySelector('.menu').style.display = 'flex';
+              canvas.style.display = 'none';
+            }
           }
         });
       });
