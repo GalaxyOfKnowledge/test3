@@ -82,7 +82,7 @@
       y: canvas.height - 60,
       width: 30,
       height: 30,
-      speed: 3 // Slower player movement
+      speed: 1 // Pixel-like movement speed
     };
 
     const bullets = [];
@@ -99,7 +99,9 @@
     const bulletCooldown = 100; // Faster cooldown in milliseconds
     const enemyFireRate = 1000; // Enemy firing rate in milliseconds
 
-    let enemyDirection = 1; // Movement direction for enemies
+    function getRandomSpeed() {
+      return (Math.random() * 1.5 + 0.5) * (Math.random() > 0.5 ? 1 : -1); // Random speed between -2 and 2
+    }
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth;
@@ -157,21 +159,18 @@
 
     function moveEnemies() {
       enemies.forEach(enemy => {
-        enemy.x += enemyDirection * 2; // Enemy speed
+        enemy.x += getRandomSpeed();
+        enemy.y += getRandomSpeed();
+
+        if (enemy.x <= 0 || enemy.x >= canvas.width - 30) enemy.x = Math.max(0, Math.min(enemy.x, canvas.width - 30));
+        if (enemy.y <= 0 || enemy.y >= canvas.height / 2) enemy.y = Math.max(0, Math.min(enemy.y, canvas.height / 2));
       });
-
-      const leftmost = Math.min(...enemies.map(enemy => enemy.x));
-      const rightmost = Math.max(...enemies.map(enemy => enemy.x));
-
-      if (leftmost <= 30 || rightmost >= canvas.width - 60) {
-        enemyDirection *= -1; // Change direction
-      }
     }
 
     function spawnEnemies() {
       enemies.length = 0;
       for (let i = 0; i < 5; i++) {
-        for (let j = 1; j < 7; j++) { // Avoid spawning in the corners
+        for (let j = 1; j < 7; j++) {
           enemies.push({ x: j * 60 + 30, y: i * 40 + 30 });
         }
       }
