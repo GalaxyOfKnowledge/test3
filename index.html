@@ -10,14 +10,15 @@
       background-image: url('space-background.jpg'); /* Local file reference */
       background-size: cover;
       background-position: center;
-      color: black;
-      text-align: center;
-      padding-top: 50px;
+      color: white;
+      margin: 0;
+      overflow: hidden;
     }
 
     h1 {
       font-size: 3rem;
       margin-bottom: 40px;
+      text-align: center;
     }
 
     .menu {
@@ -25,6 +26,7 @@
       flex-direction: column;
       gap: 20px;
       align-items: center;
+      padding-top: 50px;
     }
 
     .btn {
@@ -46,7 +48,11 @@
 
     canvas {
       display: none;
-      margin-top: 20px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background-color: black;
     }
   </style>
@@ -59,15 +65,15 @@
     <button class="btn" onclick="openSettings()">Settings</button>
   </div>
 
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <canvas id="gameCanvas"></canvas>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
     const player = {
-      x: canvas.width / 2 - 15,
-      y: canvas.height - 40,
+      x: window.innerWidth / 2 - 15,
+      y: window.innerHeight - 60,
       width: 30,
       height: 30,
       speed: 5
@@ -76,9 +82,24 @@
     const bullets = [];
     const enemies = [];
 
+    const keys = {
+      left: false,
+      right: false
+    };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      player.x = canvas.width / 2 - 15;
+      player.y = canvas.height - 60;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
     function startGame() {
       document.querySelector('.menu').style.display = 'none';
       canvas.style.display = 'block';
+      resizeCanvas();
       spawnEnemies();
       gameLoop();
     }
@@ -145,13 +166,20 @@
       moveBullets();
       moveEnemies();
       handleCollisions();
+      if (keys.left && player.x > 0) player.x -= player.speed;
+      if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
       requestAnimationFrame(gameLoop);
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft' && player.x > 0) player.x -= player.speed;
-      if (e.key === 'ArrowRight' && player.x < canvas.width - player.width) player.x += player.speed;
+      if (e.key === 'ArrowLeft') keys.left = true;
+      if (e.key === 'ArrowRight') keys.right = true;
       if (e.key === ' ') bullets.push({ x: player.x + 12, y: player.y });
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft') keys.left = false;
+      if (e.key === 'ArrowRight') keys.right = false;
     });
 
     function showHighScore() {
