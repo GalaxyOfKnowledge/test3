@@ -129,7 +129,9 @@
     function drawEnemies() {
       ctx.fillStyle = 'red';
       enemies.forEach(enemy => {
-        ctx.fillRect(enemy.x, enemy.y, 30, 30);
+        if (enemy.x >= 30 && enemy.x <= canvas.width - 60) {
+          ctx.fillRect(enemy.x, enemy.y, 30, 30);
+        }
       });
     }
 
@@ -143,7 +145,7 @@
     function spawnEnemies() {
       enemies.length = 0;
       for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 8; j++) {
+        for (let j = 1; j < 7; j++) { // Avoid spawning in the corners
           enemies.push({ x: j * 60 + 30, y: i * 40 + 30 });
         }
       }
