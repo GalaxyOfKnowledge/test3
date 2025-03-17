@@ -86,6 +86,7 @@
     };
 
     const bullets = [];
+    const enemyBullets = [];
     const enemies = [];
 
     const keys = {
@@ -96,6 +97,7 @@
 
     let lastShotTime = 0;
     const bulletCooldown = 100; // Faster cooldown in milliseconds
+    const enemyFireRate = 1000; // Enemy firing rate in milliseconds
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth;
@@ -112,6 +114,7 @@
       resizeCanvas();
       spawnEnemies();
       gameLoop();
+      setInterval(enemyFire, enemyFireRate);
     }
 
     function drawPlayer() {
@@ -122,6 +125,11 @@
     function drawBullets() {
       ctx.fillStyle = 'yellow';
       bullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, 5, 10);
+      });
+
+      ctx.fillStyle = 'red';
+      enemyBullets.forEach(bullet => {
         ctx.fillRect(bullet.x, bullet.y, 5, 10);
       });
     }
@@ -139,6 +147,11 @@
       bullets.forEach((bullet, index) => {
         bullet.y -= 5;
         if (bullet.y < 0) bullets.splice(index, 1);
+      });
+
+      enemyBullets.forEach((bullet, index) => {
+        bullet.y += 5;
+        if (bullet.y > canvas.height) enemyBullets.splice(index, 1);
       });
     }
 
@@ -171,12 +184,32 @@
           }
         });
       });
+
+      enemyBullets.forEach(bullet => {
+        if (
+          bullet.x < player.x + player.width &&
+          bullet.x + 5 > player.x &&
+          bullet.y < player.y + player.height &&
+          bullet.y + 10 > player.y
+        ) {
+          alert("Game Over!");
+          document.querySelector('.menu').style.display = 'flex';
+          canvas.style.display = 'none';
+        }
+      });
     }
 
     function shootBullet() {
       if (Date.now() - lastShotTime > bulletCooldown) {
         bullets.push({ x: player.x + 12, y: player.y });
         lastShotTime = Date.now();
+      }
+    }
+
+    function enemyFire() {
+      const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+      if (randomEnemy) {
+        enemyBullets.push({ x: randomEnemy.x + 12, y: randomEnemy.y + 30 });
       }
     }
 
