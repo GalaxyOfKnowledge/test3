@@ -53,7 +53,8 @@
     canvas {
       display: none;
       aspect-ratio: 16 / 9;
-      width: 33%;
+      width: 100%;
+      height: 33%;
       background-color: black;
     }
   </style>
@@ -93,7 +94,7 @@
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientWidth / (16 / 9);
+      canvas.height = canvas.clientHeight;
       player.x = canvas.width / 2 - 15;
       player.y = canvas.height - 60;
     }
@@ -143,12 +144,6 @@
       }
     }
 
-    function moveEnemies() {
-      enemies.forEach(enemy => {
-        enemy.y += 0.5;
-      });
-    }
-
     function handleCollisions() {
       bullets.forEach((bullet, bulletIndex) => {
         enemies.forEach((enemy, enemyIndex) => {
@@ -177,7 +172,6 @@
       drawBullets();
       drawEnemies();
       moveBullets();
-      moveEnemies();
       handleCollisions();
       if (keys.left && player.x > 0) player.x -= player.speed;
       if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
