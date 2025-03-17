@@ -13,6 +13,10 @@
       color: white;
       margin: 0;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
     h1 {
@@ -48,11 +52,9 @@
 
     canvas {
       display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      aspect-ratio: 16 / 9;
+      width: 90%;
+      max-width: 1200px;
       background-color: black;
     }
   </style>
@@ -72,8 +74,8 @@
     const ctx = canvas.getContext('2d');
 
     const player = {
-      x: window.innerWidth / 2 - 15,
-      y: window.innerHeight - 60,
+      x: canvas.width / 2 - 15,
+      y: canvas.height - 60,
       width: 30,
       height: 30,
       speed: 5
@@ -87,9 +89,12 @@
       right: false
     };
 
+    let lastShotTime = 0;
+    const bulletCooldown = 300; // Cooldown in milliseconds
+
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientWidth / (16 / 9);
       player.x = canvas.width / 2 - 15;
       player.y = canvas.height - 60;
     }
@@ -174,7 +179,10 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') keys.left = true;
       if (e.key === 'ArrowRight') keys.right = true;
-      if (e.key === ' ') bullets.push({ x: player.x + 12, y: player.y });
+      if (e.key === ' ' && Date.now() - lastShotTime > bulletCooldown) {
+        bullets.push({ x: player.x + 12, y: player.y });
+        lastShotTime = Date.now();
+      }
     });
 
     document.addEventListener('keyup', (e) => {
