@@ -82,7 +82,7 @@
       y: canvas.height - 60,
       width: 30,
       height: 30,
-      speed: 5
+      speed: 3 // Slower player movement
     };
 
     const bullets = [];
@@ -98,6 +98,8 @@
     let lastShotTime = 0;
     const bulletCooldown = 100; // Faster cooldown in milliseconds
     const enemyFireRate = 1000; // Enemy firing rate in milliseconds
+
+    let enemyDirection = 1; // Movement direction for enemies
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth;
@@ -137,9 +139,7 @@
     function drawEnemies() {
       ctx.fillStyle = 'red';
       enemies.forEach(enemy => {
-        if (enemy.x >= 30 && enemy.x <= canvas.width - 60) {
-          ctx.fillRect(enemy.x, enemy.y, 30, 30);
-        }
+        ctx.fillRect(enemy.x, enemy.y, 30, 30);
       });
     }
 
@@ -153,6 +153,19 @@
         bullet.y += 5;
         if (bullet.y > canvas.height) enemyBullets.splice(index, 1);
       });
+    }
+
+    function moveEnemies() {
+      enemies.forEach(enemy => {
+        enemy.x += enemyDirection * 2; // Enemy speed
+      });
+
+      const leftmost = Math.min(...enemies.map(enemy => enemy.x));
+      const rightmost = Math.max(...enemies.map(enemy => enemy.x));
+
+      if (leftmost <= 30 || rightmost >= canvas.width - 60) {
+        enemyDirection *= -1; // Change direction
+      }
     }
 
     function spawnEnemies() {
@@ -178,8 +191,7 @@
 
             if (enemies.length === 0) {
               alert("You Win!");
-              document.querySelector('.menu').style.display = 'flex';
-              canvas.style.display = 'none';
+              resetGame();
             }
           }
         });
@@ -193,24 +205,9 @@
           bullet.y + 10 > player.y
         ) {
           alert("Game Over!");
-          document.querySelector('.menu').style.display = 'flex';
-          canvas.style.display = 'none';
+          resetGame();
         }
       });
-    }
-
-    function shootBullet() {
-      if (Date.now() - lastShotTime > bulletCooldown) {
-        bullets.push({ x: player.x + 12, y: player.y });
-        lastShotTime = Date.now();
-      }
-    }
-
-    function enemyFire() {
-      const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
-      if (randomEnemy) {
-        enemyBullets.push({ x: randomEnemy.x + 12, y: randomEnemy.y + 30 });
-      }
     }
 
     function gameLoop() {
@@ -219,6 +216,7 @@
       drawBullets();
       drawEnemies();
       moveBullets();
+      moveEnemies();
       handleCollisions();
 
       if (keys.left && player.x > 0) player.x -= player.speed;
@@ -228,24 +226,11 @@
       requestAnimationFrame(gameLoop);
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') keys.left = true;
-      if (e.key === 'ArrowRight') keys.right = true;
-      if (e.key === ' ') keys.shooting = true;
-    });
-
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowLeft') keys.left = false;
-      if (e.key === 'ArrowRight') keys.right = false;
-      if (e.key === ' ') keys.shooting = false;
-    });
-
-    function showHighScore() {
-      alert("Highscore coming soon!");
-    }
-
-    function openSettings() {
-      alert("Settings page coming soon!");
+    function shootBullet() {
+      if (Date.now() - lastShotTime > bulletCooldown) {
+        bullets.push({ x: player.x + 12, y: player.y });
+        lastShotTime = Date.now();
+      }
     }
   </script>
 </body>
