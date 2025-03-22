@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Over</title>
+  <style>
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background-image: url('space-background.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .endgame-container {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .btn {
+      margin-top: 20px;
+      background-color: white;
+      color: black;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: gray;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="endgame-container">
+    <h1 id="endgameMessage"></h1>
+    <p id="finalScore"></p>
+    <button class="btn" onclick="returnToMenu()">Return to Menu</button>
+  </div>
+  <script>
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+    
+    document.getElementById('endgameMessage').innerText = getQueryParam('win') === 'true' ? 'You Win!' : 'Game Over';
+    document.getElementById('finalScore').innerText = `Final Score: ${getQueryParam('score')}`;
+    
+    function returnToMenu() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
