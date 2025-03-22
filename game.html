@@ -85,7 +85,7 @@
     function updatePlayer() {
       if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
       if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
-      if (keys[' ']) shoot();
+      if (keys[' '] && canShoot) shoot();
     }
 
     function drawPlayer() {
@@ -118,6 +118,12 @@
         bullet.y += enemyBulletSpeed;
       });
       enemyBullets = enemyBullets.filter(bullet => bullet.y < canvas.height);
+    }
+
+    function shoot() {
+      player.bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y, width: 5, height: 10 });
+      canShoot = false;
+      setTimeout(() => canShoot = true, shootCooldown);
     }
 
     function createEnemies() {
