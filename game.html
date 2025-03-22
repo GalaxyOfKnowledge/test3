@@ -52,6 +52,34 @@
     let canShoot = true;
     const shootCooldown = 300;
 
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawEnemies() {
+      enemies.forEach(enemy => {
+        if (enemy.alive) {
+          ctx.fillStyle = 'green';
+          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+      });
+    }
+
+    function drawBullets() {
+      ctx.fillStyle = 'white';
+      player.bullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
+
+    function drawEnemyBullets() {
+      ctx.fillStyle = 'red';
+      enemyBullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
+
     function createEnemies() {
       const enemyRows = 5;
       const enemyCols = 8;
@@ -68,6 +96,17 @@
           });
         }
       }
+    }
+
+    function enemyShoot() {
+      if (enemies.length > 0) {
+        const aliveEnemies = enemies.filter(enemy => enemy.alive);
+        if (aliveEnemies.length > 0) {
+          const shooter = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+          enemyBullets.push({ x: shooter.x + shooter.width / 2, y: shooter.y, width: 5, height: 10, color: 'red' });
+        }
+      }
+      setTimeout(enemyShoot, 1000);
     }
 
     function drawScore() {
