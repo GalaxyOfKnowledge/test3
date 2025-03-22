@@ -90,13 +90,15 @@
 
     function drawBullets() {
       ctx.fillStyle = 'white';
-      player.bullets.forEach(bullet => {
+      player.bullets.forEach((bullet, bulletIndex) => {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y -= bulletSpeed;
       });
       
-      player.bullets.forEach((bullet, bulletIndex) => {
-        enemies.forEach((enemy, enemyIndex) => {
+      for (let i = player.bullets.length - 1; i >= 0; i--) {
+        let bullet = player.bullets[i];
+        for (let j = enemies.length - 1; j >= 0; j--) {
+          let enemy = enemies[j];
           if (
             enemy.alive &&
             bullet.x < enemy.x + enemy.width &&
@@ -105,12 +107,13 @@
             bullet.y + bullet.height > enemy.y
           ) {
             enemy.alive = false;
-            player.bullets.splice(bulletIndex, 1);
+            player.bullets.splice(i, 1);
             player.score += 10;
             document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
+            break;
           }
-        });
-      });
+        }
+      }
       
       player.bullets = player.bullets.filter(bullet => bullet.y > 0);
     }
