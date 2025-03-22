@@ -25,6 +25,27 @@
       height: 100%;
     }
 
+    .endgame-screen {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      text-align: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    .endgame-button {
+      margin-top: 10px;
+      padding: 10px;
+      cursor: pointer;
+      background: white;
+      border: none;
+    }
+
     .score-display {
       position: absolute;
       top: 10px;
@@ -39,6 +60,11 @@
 <body>
   <div class="score-display" id="scoreDisplay">Score: 0</div>
   <canvas id="gameCanvas"></canvas>
+  <div id="endgameScreen" class="endgame-screen">
+    <p id="endgameMessage"></p>
+    <p id="finalScore"></p>
+    <button class="endgame-button" onclick="returnToMenu()">Return to Menu</button>
+  </div>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -94,27 +120,6 @@
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y -= bulletSpeed;
       });
-      
-      for (let i = player.bullets.length - 1; i >= 0; i--) {
-        let bullet = player.bullets[i];
-        for (let j = enemies.length - 1; j >= 0; j--) {
-          let enemy = enemies[j];
-          if (
-            enemy.alive &&
-            bullet.x < enemy.x + enemy.width &&
-            bullet.x + bullet.width > enemy.x &&
-            bullet.y < enemy.y + enemy.height &&
-            bullet.y + bullet.height > enemy.y
-          ) {
-            enemy.alive = false;
-            player.bullets.splice(i, 1);
-            player.score += 10;
-            document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
-            break;
-          }
-        }
-      }
-      
       player.bullets = player.bullets.filter(bullet => bullet.y > 0);
     }
 
@@ -124,12 +129,7 @@
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y += enemyBulletSpeed;
         
-        if (
-          bullet.y + bullet.height >= player.y && // Ensuring only the front of the bullet hits
-          bullet.y <= player.y + player.height &&
-          bullet.x + bullet.width >= player.x &&
-          bullet.x <= player.x + player.width
-        ) {
+        if (bullet.y + bullet.height >= player.y && bullet.x >= player.x && bullet.x <= player.x + player.width) {
           endGame(false);
         }
       });
@@ -161,7 +161,13 @@
 
     function endGame(win) {
       gameOver = true;
-      window.location.href = `endgame.html?win=${win}&score=${player.score}`;
+      document.getElementById('endgameMessage').innerText = win ? 'You Win!' : 'Game Over';
+      document.getElementById('finalScore').innerText = `Final Score: ${player.score}`;
+      document.getElementById('endgameScreen').style.display = 'block';
+    }
+
+    function returnToMenu() {
+      window.location.href = 'index.html';
     }
 
     function gameLoop() {
@@ -176,4 +182,26 @@
       requestAnimationFrame(gameLoop);
     }
 
-    function createEnemies
+    function createEnemies() {
+      const enemyRows = 5;
+      const enemyCols = 8;
+      const enemySpacing = 50;
+      const startX = (canvas.width - (enemyCols * enemySpacing)) / 2;
+      for (let i = 0; i < enemyRows; i++) {
+        for (let j = 0; j < enemyCols; j++) {
+          enemies.push({
+            x: startX + j * enemySpacing,
+            y: 50 + i * enemySpacing,
+            width: 30,
+            height: 30,
+            alive: true
+          });
+        }
+      }
+    }
+
+    createEnemies();
+    gameLoop();
+  </script>
+</body>
+</html>
