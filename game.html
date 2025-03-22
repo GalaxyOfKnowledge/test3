@@ -30,7 +30,6 @@
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
@@ -41,16 +40,93 @@
       height: 30,
       color: 'white',
       speed: 5,
+      bullets: []
     };
+
+    const enemies = [];
+    const enemyBullets = [];
+    const bulletSpeed = 5;
+    const enemyBulletSpeed = 3;
+    let gameOver = false;
+    let gameWin = false;
+    let canShoot = true;
+    const shootCooldown = 300;
 
     function drawPlayer() {
       ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
+    function drawEnemies() {
+      enemies.forEach(enemy => {
+        ctx.fillStyle = 'red';
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      });
+    }
+
+    function drawBullets() {
+      ctx.fillStyle = 'white';
+      player.bullets.forEach((bullet, index) => {
+        bullet.y -= bulletSpeed;
+        if (bullet.y < 0) player.bullets.splice(index, 1);
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
+
+    function drawEnemyBullets() {
+      ctx.fillStyle = 'red';
+      enemyBullets.forEach((bullet, index) => {
+        bullet.y += enemyBulletSpeed;
+        if (bullet.y > canvas.height) enemyBullets.splice(index, 1);
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+      });
+    }
+
+    function checkCollisions() {
+      enemyBullets.forEach((bullet, index) => {
+        if (
+          bullet.x < player.x + player.width &&
+          bullet.x + bullet.width > player.x &&
+          bullet.y < player.y + player.height &&
+          bullet.y + bullet.height > player.y
+        ) {
+          gameOver = true;
+        }
+      });
+    }
+
+    function handleShooting() {
+      if (canShoot) {
+        player.bullets.push({
+          x: player.x + player.width / 2 - 2.5,
+          y: player.y,
+          width: 5,
+          height: 10
+        });
+        canShoot = false;
+        setTimeout(() => { canShoot = true; }, shootCooldown);
+      }
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' && player.x > 0) player.x -= player.speed;
+      if (event.key === 'ArrowRight' && player.x < canvas.width - player.width) player.x += player.speed;
+      if (event.key === ' ' || event.key === 'Spacebar') handleShooting();
+    });
+
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (gameOver) {
+        ctx.fillStyle = 'red';
+        ctx.font = '30px Arial';
+        ctx.fillText('Game Over!', canvas.width / 2 - 70, canvas.height / 2);
+        return;
+      }
       drawPlayer();
+      drawEnemies();
+      drawBullets();
+      drawEnemyBullets();
+      checkCollisions();
       requestAnimationFrame(gameLoop);
     }
 
