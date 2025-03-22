@@ -45,12 +45,22 @@
     };
 
     const enemies = [];
-    const enemyBullets = [];
+    let enemyBullets = [];
     const bulletSpeed = 5;
     const enemyBulletSpeed = 3;
     let gameOver = false;
     let canShoot = true;
     const shootCooldown = 300;
+    let keys = {};
+
+    document.addEventListener('keydown', (e) => keys[e.key] = true);
+    document.addEventListener('keyup', (e) => delete keys[e.key]);
+
+    function updatePlayer() {
+      if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+      if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
+      if (keys[' ']) shoot();
+    }
 
     function drawPlayer() {
       ctx.fillStyle = player.color;
@@ -70,14 +80,18 @@
       ctx.fillStyle = 'white';
       player.bullets.forEach(bullet => {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        bullet.y -= bulletSpeed;
       });
+      player.bullets = player.bullets.filter(bullet => bullet.y > 0);
     }
 
     function drawEnemyBullets() {
       ctx.fillStyle = 'red';
       enemyBullets.forEach(bullet => {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        bullet.y += enemyBulletSpeed;
       });
+      enemyBullets = enemyBullets.filter(bullet => bullet.y < canvas.height);
     }
 
     function createEnemies() {
@@ -103,7 +117,7 @@
         const aliveEnemies = enemies.filter(enemy => enemy.alive);
         if (aliveEnemies.length > 0) {
           const shooter = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
-          enemyBullets.push({ x: shooter.x + shooter.width / 2, y: shooter.y, width: 5, height: 10, color: 'red' });
+          enemyBullets.push({ x: shooter.x + shooter.width / 2, y: shooter.y, width: 5, height: 10 });
         }
       }
       setTimeout(enemyShoot, 1000);
@@ -147,6 +161,14 @@
       });
     }
 
+    function shoot() {
+      if (canShoot) {
+        player.bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y, width: 5, height: 10 });
+        canShoot = false;
+        setTimeout(() => canShoot = true, shootCooldown);
+      }
+    }
+
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (gameOver) {
@@ -155,6 +177,7 @@
         ctx.fillText('Game Over!', canvas.width / 2 - 70, canvas.height / 2);
         return;
       }
+      updatePlayer();
       drawScore();
       drawPlayer();
       drawEnemies();
