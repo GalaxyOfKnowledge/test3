@@ -138,6 +138,16 @@
       setTimeout(() => canShoot = true, shootCooldown);
     }
 
+    function enemyShoot() {
+      const aliveEnemies = enemies.filter(e => e.alive);
+      if (aliveEnemies.length > 0) {
+        const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+        enemyBullets.push({ x: randomEnemy.x + randomEnemy.width / 2 - 2.5, y: randomEnemy.y, width: 5, height: 10 });
+      }
+    }
+
+    setInterval(enemyShoot, 1000);
+
     function createEnemies() {
       const enemyRows = 5;
       const enemyCols = 8;
@@ -174,17 +184,6 @@
           showEndGameScreen("You Lose!");
         }
       });
-    }
-
-    function showEndGameScreen(message) {
-      gameOver = true;
-      document.getElementById("endgameMessage").innerText = message;
-      document.getElementById("finalScore").innerText = `Final Score: ${player.score}`;
-      document.getElementById("endgameScreen").style.display = "block";
-    }
-
-    function returnToMenu() {
-      window.location.href = 'index.html';
     }
 
     function gameLoop() {
