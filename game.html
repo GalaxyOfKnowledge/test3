@@ -24,20 +24,9 @@
       width: 33%;
       height: 100%;
     }
-
-    .score-display {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
-  <div class="score-display" id="scoreDisplay">Score: 0</div>
   <canvas id="gameCanvas"></canvas>
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -57,7 +46,7 @@
     };
 
     const enemies = [];
-    let enemyBullets = [];
+    const enemyBullets = [];
     const bulletSpeed = 5;
     const enemyBulletSpeed = 3;
     let gameOver = false;
@@ -90,29 +79,19 @@
 
     function drawBullets() {
       ctx.fillStyle = 'white';
-      player.bullets.forEach(bullet => {
+      player.bullets.forEach((bullet, index) => {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y -= bulletSpeed;
+        
+        enemies.forEach(enemy => {
+          if (enemy.alive && bullet.y <= enemy.y + enemy.height && bullet.x >= enemy.x && bullet.x <= enemy.x + enemy.width) {
+            enemy.alive = false;
+            player.bullets.splice(index, 1);
+            player.score += 100;
+          }
+        });
       });
       player.bullets = player.bullets.filter(bullet => bullet.y > 0);
-    }
-
-    function drawEnemyBullets() {
-      ctx.fillStyle = 'red';
-      enemyBullets.forEach(bullet => {
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        bullet.y += enemyBulletSpeed;
-        
-        if (
-          bullet.y + bullet.height >= player.y && 
-          bullet.y <= player.y + player.height && 
-          bullet.x >= player.x && 
-          bullet.x <= player.x + player.width
-        ) {
-          endGame(false);
-        }
-      });
-      enemyBullets = enemyBullets.filter(bullet => bullet.y < canvas.height);
     }
 
     function shoot() {
@@ -120,17 +99,6 @@
       canShoot = false;
       setTimeout(() => canShoot = true, shootCooldown);
     }
-
-    function enemyShoot() {
-      if (gameOver) return;
-      const aliveEnemies = enemies.filter(e => e.alive);
-      if (aliveEnemies.length > 0) {
-        const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
-        enemyBullets.push({ x: randomEnemy.x + randomEnemy.width / 2 - 2.5, y: randomEnemy.y, width: 5, height: 10 });
-      }
-    }
-
-    setInterval(enemyShoot, 1000);
 
     function checkWinCondition() {
       if (enemies.every(enemy => !enemy.alive)) {
@@ -150,7 +118,6 @@
       drawPlayer();
       drawBullets();
       drawEnemies();
-      drawEnemyBullets();
       checkWinCondition();
       requestAnimationFrame(gameLoop);
     }
