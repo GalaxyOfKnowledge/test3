@@ -52,6 +52,19 @@
     let canShoot = true;
     const shootCooldown = 300;
 
+    function createEnemies() {
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 8; j++) {
+          enemies.push({
+            x: j * 40 + 20,
+            y: i * 40 + 20,
+            width: 30,
+            height: 30
+          });
+        }
+      }
+    }
+
     function drawPlayer() {
       ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.width, player.height);
@@ -80,6 +93,19 @@
         if (bullet.y > canvas.height) enemyBullets.splice(index, 1);
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
       });
+    }
+
+    function enemyShoot() {
+      if (enemies.length > 0) {
+        const shooter = enemies[Math.floor(Math.random() * enemies.length)];
+        enemyBullets.push({
+          x: shooter.x + shooter.width / 2 - 2.5,
+          y: shooter.y + shooter.height,
+          width: 5,
+          height: 10
+        });
+      }
+      setTimeout(enemyShoot, 1000);
     }
 
     function checkCollisions() {
@@ -130,6 +156,8 @@
       requestAnimationFrame(gameLoop);
     }
 
+    createEnemies();
+    enemyShoot();
     gameLoop();
   </script>
 </body>
