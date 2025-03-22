@@ -45,12 +45,24 @@
       background: white;
       border: none;
     }
+
+    .score-display {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+  <div class="score-display" id="scoreDisplay">Score: 0</div>
   <canvas id="gameCanvas"></canvas>
   <div id="endgameScreen" class="endgame-screen">
     <p id="endgameMessage"></p>
+    <p id="finalScore"></p>
     <button class="endgame-button" onclick="returnToMenu()">Return to Menu</button>
   </div>
   <script>
@@ -144,21 +156,6 @@
       }
     }
 
-    function enemyShoot() {
-      const aliveEnemies = enemies.filter(enemy => enemy.alive);
-      if (aliveEnemies.length > 0) {
-        const shooter = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
-        enemyBullets.push({ x: shooter.x + shooter.width / 2, y: shooter.y, width: 5, height: 10 });
-      }
-      setTimeout(enemyShoot, 1000);
-    }
-
-    function checkGameOver() {
-      if (enemies.every(enemy => !enemy.alive)) {
-        showEndGameScreen("You Win!");
-      }
-    }
-
     function checkCollisions() {
       player.bullets.forEach((bullet, bIndex) => {
         enemies.forEach(enemy => {
@@ -166,20 +163,16 @@
             enemy.alive = false;
             player.bullets.splice(bIndex, 1);
             player.score += 10;
+            document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
           }
         });
-      });
-
-      enemyBullets.forEach((bullet, index) => {
-        if (bullet.x < player.x + player.width && bullet.x + bullet.width > player.x && bullet.y < player.y + player.height && bullet.y + bullet.height > player.y) {
-          showEndGameScreen("Game Over!");
-        }
       });
     }
 
     function showEndGameScreen(message) {
       gameOver = true;
       document.getElementById("endgameMessage").innerText = message;
+      document.getElementById("finalScore").innerText = `Final Score: ${player.score}`;
       document.getElementById("endgameScreen").style.display = "block";
     }
 
@@ -196,13 +189,11 @@
         drawBullets();
         drawEnemyBullets();
         checkCollisions();
-        checkGameOver();
         requestAnimationFrame(gameLoop);
       }
     }
 
     createEnemies();
-    enemyShoot();
     gameLoop();
   </script>
 </body>
