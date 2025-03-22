@@ -124,7 +124,12 @@
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y += enemyBulletSpeed;
         
-        if (bullet.y + bullet.height >= player.y && bullet.x >= player.x && bullet.x <= player.x + player.width) {
+        if (
+          bullet.y + bullet.height >= player.y && // Ensuring only the front of the bullet hits
+          bullet.y <= player.y + player.height &&
+          bullet.x + bullet.width >= player.x &&
+          bullet.x <= player.x + player.width
+        ) {
           endGame(false);
         }
       });
@@ -171,26 +176,4 @@
       requestAnimationFrame(gameLoop);
     }
 
-    function createEnemies() {
-      const enemyRows = 5;
-      const enemyCols = 8;
-      const enemySpacing = 50;
-      const startX = (canvas.width - (enemyCols * enemySpacing)) / 2;
-      for (let i = 0; i < enemyRows; i++) {
-        for (let j = 0; j < enemyCols; j++) {
-          enemies.push({
-            x: startX + j * enemySpacing,
-            y: 50 + i * enemySpacing,
-            width: 30,
-            height: 30,
-            alive: true
-          });
-        }
-      }
-    }
-
-    createEnemies();
-    gameLoop();
-  </script>
-</body>
-</html>
+    function createEnemies
