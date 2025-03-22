@@ -164,8 +164,15 @@
             player.bullets.splice(bIndex, 1);
             player.score += 10;
             document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
+            if (enemies.every(e => !e.alive)) showEndGameScreen("You Win!");
           }
         });
+      });
+
+      enemyBullets.forEach(bullet => {
+        if (bullet.x < player.x + player.width && bullet.x + bullet.width > player.x && bullet.y < player.y + player.height && bullet.y + bullet.height > player.y) {
+          showEndGameScreen("You Lose!");
+        }
       });
     }
 
