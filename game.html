@@ -84,7 +84,7 @@
         bullet.y -= bulletSpeed;
         
         enemies.forEach(enemy => {
-          if (enemy.alive && bullet.y <= enemy.y + enemy.height && bullet.x >= enemy.x && bullet.x <= enemy.x + enemy.width) {
+          if (enemy.alive && bullet.y <= enemy.y + enemy.height && bullet.y + bullet.height >= enemy.y && bullet.x >= enemy.x && bullet.x <= enemy.x + enemy.width) {
             enemy.alive = false;
             player.bullets.splice(index, 1);
             player.score += 100;
@@ -99,6 +99,17 @@
       canShoot = false;
       setTimeout(() => canShoot = true, shootCooldown);
     }
+
+    function enemyShoot() {
+      if (gameOver) return;
+      const aliveEnemies = enemies.filter(e => e.alive);
+      if (aliveEnemies.length > 0) {
+        const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+        enemyBullets.push({ x: randomEnemy.x + randomEnemy.width / 2 - 2.5, y: randomEnemy.y, width: 5, height: 10 });
+      }
+    }
+
+    setInterval(enemyShoot, 1000);
 
     function checkWinCondition() {
       if (enemies.every(enemy => !enemy.alive)) {
