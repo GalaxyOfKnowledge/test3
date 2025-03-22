@@ -128,6 +128,10 @@
       enemyBullets.forEach(bullet => {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y += enemyBulletSpeed;
+        
+        if (bullet.y + bullet.height >= player.y && bullet.x >= player.x && bullet.x <= player.x + player.width) {
+          endGame(false);
+        }
       });
       enemyBullets = enemyBullets.filter(bullet => bullet.y < canvas.height);
     }
@@ -166,6 +170,18 @@
       }
     }
 
+    function gameLoop() {
+      if (gameOver) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updatePlayer();
+      drawPlayer();
+      drawBullets();
+      drawEnemies();
+      drawEnemyBullets();
+      checkCollisions();
+      requestAnimationFrame(gameLoop);
+    }
+
     function checkCollisions() {
       player.bullets.forEach((bullet, bIndex) => {
         enemies.forEach(enemy => {
@@ -174,29 +190,10 @@
             player.bullets.splice(bIndex, 1);
             player.score += 10;
             document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
-            if (enemies.every(e => !e.alive)) showEndGameScreen("You Win!");
+            if (enemies.every(e => !e.alive)) endGame(true);
           }
         });
       });
-
-      enemyBullets.forEach(bullet => {
-        if (bullet.x < player.x + player.width && bullet.x + bullet.width > player.x && bullet.y < player.y + player.height && bullet.y + bullet.height > player.y) {
-          showEndGameScreen("You Lose!");
-        }
-      });
-    }
-
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (!gameOver) {
-        updatePlayer();
-        drawPlayer();
-        drawEnemies();
-        drawBullets();
-        drawEnemyBullets();
-        checkCollisions();
-        requestAnimationFrame(gameLoop);
-      }
     }
 
     createEnemies();
