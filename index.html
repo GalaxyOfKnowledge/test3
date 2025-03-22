@@ -1,192 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Space Invaders</title>
-  <style>
-    body {
-      font-family: 'Press Start 2P', cursive;
-      background-image: url('space-background.jpg');
-      background-size: cover;
-      background-position: center;
-      color: white;
-      margin: 0;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  movePlayer();
+  updateBullets();
+  updateEnemies();
+  handleCollisions();
+  requestAnimationFrame(gameLoop);
+}
 
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 40px;
-      text-align: center;
-    }
+function movePlayer() {
+  if (keys.left && player.x > 0) player.x -= player.speed;
+  if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
+}
 
-    .menu, .endgame {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
-    }
+function updateBullets() {
+  bullets.forEach((bullet, index) => {
+    bullet.y -= 5;
+    if (bullet.y < 0) bullets.splice(index, 1);
+  });
+}
 
-    .btn {
-      background-color: white;
-      color: black;
-      border: none;
-      padding: 15px 40px;
-      font-size: 1.2rem;
-      cursor: pointer;
-      border-radius: 10px;
-      width: 200px;
-      transition: 0.3s ease;
-    }
+function spawnEnemies() {
+  enemies.length = 0;  // Reset enemies
+  for (let i = 0; i < 5; i++) {
+    enemies.push({ x: 100 + i * 60, y: 50, width: 30, height: 30 });
+  }
+}
 
-    .btn:hover {
-      background-color: gray;
-      color: white;
-    }
+function enemyFire() {
+  if (enemies.length > 0) {
+    let shooter = enemies[Math.floor(Math.random() * enemies.length)];
+    enemyBullets.push({ x: shooter.x + 15, y: shooter.y + 30, width: 5, height: 10 });
+  }
+}
 
-    .endgame {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
-      padding: 20px;
-      border-radius: 10px;
-    }
+function updateEnemies() {
+  enemies.forEach(enemy => {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+  });
+}
 
-    canvas {
-      display: none;
-      aspect-ratio: 16 / 9;
-      width: 33%;
-      height: 100%;
-      background-color: black;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-  </style>
-</head>
-<body>
-  <h1>Space Invaders</h1>
-  <div class="menu">
-    <button class="btn" onclick="startGame()">Play</button>
-    <button class="btn" onclick="showHighScore()">Highscore</button>
-    <button class="btn" onclick="openSettings()">Settings</button>
-  </div>
-
-  <div class="endgame" id="endgame">
-    <h2 id="endgameMessage"></h2>
-    <button class="btn" onclick="restartGame()">Restart</button>
-  </div>
-
-  <canvas id="gameCanvas"></canvas>
-
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const endgameScreen = document.getElementById('endgame');
-    const endgameMessage = document.getElementById('endgameMessage');
-
-    const player = {
-      x: canvas.width / 2 - 15,
-      y: canvas.height - 60,
-      width: 30,
-      height: 30,
-      speed: 5
-    };
-
-    const bullets = [];
-    const enemyBullets = [];
-    const enemies = [];
-
-    const keys = {
-      left: false,
-      right: false,
-      shooting: false
-    };
-
-    let lastShotTime = 0;
-    const bulletCooldown = 100;
-    const enemyFireRate = 1000;
-
-    function resizeCanvas() {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-      player.x = canvas.width / 2 - 15;
-      player.y = canvas.height - 60;
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'ArrowLeft') keys.left = true;
-      if (e.code === 'ArrowRight') keys.right = true;
-      if (e.code === 'Space') keys.shooting = true;
-    });
-
-    window.addEventListener('keyup', (e) => {
-      if (e.code === 'ArrowLeft') keys.left = false;
-      if (e.code === 'ArrowRight') keys.right = false;
-      if (e.code === 'Space') keys.shooting = false;
-    });
-
-    function startGame() {
-      document.querySelector('.menu').style.display = 'none';
-      canvas.style.display = 'block';
-      endgameScreen.style.display = 'none';
-      resizeCanvas();
-      spawnEnemies();
-      gameLoop();
-      setInterval(enemyFire, enemyFireRate);
-    }
-
-    function endGame(message) {
-      endgameMessage.innerText = message;
-      endgameScreen.style.display = 'flex';
-      canvas.style.display = 'none';
-    }
-
-    function restartGame() {
-      location.reload();
-    }
-
-    function handleCollisions() {
-      bullets.forEach((bullet, bulletIndex) => {
-        enemies.forEach((enemy, enemyIndex) => {
-          if (
-            bullet.x < enemy.x + 30 &&
-            bullet.x + 5 > enemy.x &&
-            bullet.y < enemy.y + 30 &&
-            bullet.y + 10 > enemy.y
-          ) {
-            bullets.splice(bulletIndex, 1);
-            enemies.splice(enemyIndex, 1);
-
-            if (enemies.length === 0) {
-              endGame("You Win!");
-            }
-          }
-        });
-      });
-
-      enemyBullets.forEach(bullet => {
-        if (
-          bullet.x < player.x + player.width &&
-          bullet.x + 5 > player.x &&
-          bullet.y < player.y + player.height &&
-          bullet.y + 10 > player.y
-        ) {
-          endGame("Game Over!");
-        }
-      });
-    }
-  </script>
-</body>
-</html>
+function startGame() {
+  document.querySelector('.menu').style.display = 'none';
+  canvas.style.display = 'block';
+  endgameScreen.style.display = 'none';
+  resizeCanvas();
+  spawnEnemies();
+  gameLoop();
+  setInterval(enemyFire, enemyFireRate);
+}
