@@ -90,7 +90,7 @@
 
     function drawBullets() {
       ctx.fillStyle = 'white';
-      player.bullets.forEach((bullet, bulletIndex) => {
+      player.bullets.forEach(bullet => {
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y -= bulletSpeed;
       });
