@@ -15,6 +15,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      flex-direction: column;
     }
 
     canvas {
@@ -23,10 +24,35 @@
       width: 33%;
       height: 100%;
     }
+
+    .endgame-screen {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      text-align: center;
+      color: white;
+      font-size: 24px;
+    }
+
+    .endgame-button {
+      margin-top: 10px;
+      padding: 10px;
+      cursor: pointer;
+      background: white;
+      border: none;
+    }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
+  <div id="endgameScreen" class="endgame-screen">
+    <p id="endgameMessage"></p>
+    <button class="endgame-button" onclick="returnToMenu()">Return to Menu</button>
+  </div>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -113,32 +139,24 @@
     }
 
     function enemyShoot() {
-      if (enemies.length > 0) {
-        const aliveEnemies = enemies.filter(enemy => enemy.alive);
-        if (aliveEnemies.length > 0) {
-          const shooter = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
-          enemyBullets.push({ x: shooter.x + shooter.width / 2, y: shooter.y, width: 5, height: 10 });
-        }
+      const aliveEnemies = enemies.filter(enemy => enemy.alive);
+      if (aliveEnemies.length > 0) {
+        const shooter = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+        enemyBullets.push({ x: shooter.x + shooter.width / 2, y: shooter.y, width: 5, height: 10 });
       }
       setTimeout(enemyShoot, 1000);
     }
 
-    function drawScore() {
-      ctx.fillStyle = 'white';
-      ctx.font = '20px Arial';
-      ctx.fillText(`Score: ${player.score}`, 10, 20);
+    function checkGameOver() {
+      if (enemies.every(enemy => !enemy.alive)) {
+        showEndGameScreen("You Win!");
+      }
     }
 
     function checkCollisions() {
       player.bullets.forEach((bullet, bIndex) => {
         enemies.forEach(enemy => {
-          if (
-            enemy.alive &&
-            bullet.x < enemy.x + enemy.width &&
-            bullet.x + bullet.width > enemy.x &&
-            bullet.y < enemy.y + enemy.height &&
-            bullet.y + bullet.height > enemy.y
-          ) {
+          if (enemy.alive && bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x && bullet.y < enemy.y + enemy.height && bullet.y + bullet.height > enemy.y) {
             enemy.alive = false;
             player.bullets.splice(bIndex, 1);
             player.score += 10;
@@ -147,44 +165,34 @@
       });
 
       enemyBullets.forEach((bullet, index) => {
-        if (
-          bullet.x < player.x + player.width &&
-          bullet.x + bullet.width > player.x &&
-          bullet.y < player.y + player.height &&
-          bullet.y + bullet.height > player.y
-        ) {
-          gameOver = true;
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 2000);
+        if (bullet.x < player.x + player.width && bullet.x + bullet.width > player.x && bullet.y < player.y + player.height && bullet.y + bullet.height > player.y) {
+          showEndGameScreen("Game Over!");
         }
       });
     }
 
-    function shoot() {
-      if (canShoot) {
-        player.bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y, width: 5, height: 10 });
-        canShoot = false;
-        setTimeout(() => canShoot = true, shootCooldown);
-      }
+    function showEndGameScreen(message) {
+      gameOver = true;
+      document.getElementById("endgameMessage").innerText = message;
+      document.getElementById("endgameScreen").style.display = "block";
+    }
+
+    function returnToMenu() {
+      window.location.href = 'index.html';
     }
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (gameOver) {
-        ctx.fillStyle = 'red';
-        ctx.font = '30px Arial';
-        ctx.fillText('Game Over!', canvas.width / 2 - 70, canvas.height / 2);
-        return;
+      if (!gameOver) {
+        updatePlayer();
+        drawPlayer();
+        drawEnemies();
+        drawBullets();
+        drawEnemyBullets();
+        checkCollisions();
+        checkGameOver();
+        requestAnimationFrame(gameLoop);
       }
-      updatePlayer();
-      drawScore();
-      drawPlayer();
-      drawEnemies();
-      drawBullets();
-      drawEnemyBullets();
-      checkCollisions();
-      requestAnimationFrame(gameLoop);
     }
 
     createEnemies();
