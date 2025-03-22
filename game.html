@@ -94,6 +94,24 @@
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y -= bulletSpeed;
       });
+      
+      player.bullets.forEach((bullet, bulletIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+          if (
+            enemy.alive &&
+            bullet.x < enemy.x + enemy.width &&
+            bullet.x + bullet.width > enemy.x &&
+            bullet.y < enemy.y + enemy.height &&
+            bullet.y + bullet.height > enemy.y
+          ) {
+            enemy.alive = false;
+            player.bullets.splice(bulletIndex, 1);
+            player.score += 10;
+            document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
+          }
+        });
+      });
+      
       player.bullets = player.bullets.filter(bullet => bullet.y > 0);
     }
 
