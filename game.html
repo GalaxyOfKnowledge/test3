@@ -48,18 +48,22 @@
     const bulletSpeed = 5;
     const enemyBulletSpeed = 3;
     let gameOver = false;
-    let gameWin = false;
     let canShoot = true;
     const shootCooldown = 300;
 
     function createEnemies() {
-      for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 8; j++) {
+      const enemyRows = 5;
+      const enemyCols = 8;
+      const enemySpacing = 50;
+      const startX = (canvas.width - (enemyCols * enemySpacing)) / 2;
+      for (let i = 0; i < enemyRows; i++) {
+        for (let j = 0; j < enemyCols; j++) {
           enemies.push({
-            x: j * 40 + 20,
-            y: i * 40 + 20,
+            x: startX + j * enemySpacing,
+            y: 50 + i * enemySpacing,
             width: 30,
-            height: 30
+            height: 30,
+            alive: true
           });
         }
       }
@@ -72,8 +76,10 @@
 
     function drawEnemies() {
       enemies.forEach(enemy => {
-        ctx.fillStyle = 'red';
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        if (enemy.alive) {
+          ctx.fillStyle = 'red';
+          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
       });
     }
 
@@ -96,8 +102,9 @@
     }
 
     function enemyShoot() {
-      if (enemies.length > 0) {
-        const shooter = enemies[Math.floor(Math.random() * enemies.length)];
+      const livingEnemies = enemies.filter(e => e.alive);
+      if (livingEnemies.length > 0) {
+        const shooter = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
         enemyBullets.push({
           x: shooter.x + shooter.width / 2 - 2.5,
           y: shooter.y + shooter.height,
@@ -109,6 +116,21 @@
     }
 
     function checkCollisions() {
+      player.bullets.forEach((bullet, bIndex) => {
+        enemies.forEach(enemy => {
+          if (
+            enemy.alive &&
+            bullet.x < enemy.x + enemy.width &&
+            bullet.x + bullet.width > enemy.x &&
+            bullet.y < enemy.y + enemy.height &&
+            bullet.y + bullet.height > enemy.y
+          ) {
+            enemy.alive = false;
+            player.bullets.splice(bIndex, 1);
+          }
+        });
+      });
+
       enemyBullets.forEach((bullet, index) => {
         if (
           bullet.x < player.x + player.width &&
