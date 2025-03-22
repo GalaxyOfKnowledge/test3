@@ -143,6 +143,7 @@
     }
 
     function enemyShoot() {
+      if (gameOver) return;
       const aliveEnemies = enemies.filter(e => e.alive);
       if (aliveEnemies.length > 0) {
         const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
@@ -151,6 +152,35 @@
     }
 
     setInterval(enemyShoot, 1000);
+
+    function checkWinCondition() {
+      if (enemies.every(enemy => !enemy.alive)) {
+        endGame(true);
+      }
+    }
+
+    function endGame(win) {
+      gameOver = true;
+      document.getElementById('endgameMessage').innerText = win ? 'You Win!' : 'Game Over';
+      document.getElementById('finalScore').innerText = `Final Score: ${player.score}`;
+      document.getElementById('endgameScreen').style.display = 'block';
+    }
+
+    function returnToMenu() {
+      window.location.href = 'index.html';
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updatePlayer();
+      drawPlayer();
+      drawBullets();
+      drawEnemies();
+      drawEnemyBullets();
+      checkWinCondition();
+      requestAnimationFrame(gameLoop);
+    }
 
     function createEnemies() {
       const enemyRows = 5;
@@ -168,32 +198,6 @@
           });
         }
       }
-    }
-
-    function gameLoop() {
-      if (gameOver) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      updatePlayer();
-      drawPlayer();
-      drawBullets();
-      drawEnemies();
-      drawEnemyBullets();
-      checkCollisions();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function checkCollisions() {
-      player.bullets.forEach((bullet, bIndex) => {
-        enemies.forEach(enemy => {
-          if (enemy.alive && bullet.x < enemy.x + enemy.width && bullet.x + bullet.width > enemy.x && bullet.y < enemy.y + enemy.height && bullet.y + bullet.height > enemy.y) {
-            enemy.alive = false;
-            player.bullets.splice(bIndex, 1);
-            player.score += 10;
-            document.getElementById('scoreDisplay').innerText = `Score: ${player.score}`;
-            if (enemies.every(e => !e.alive)) endGame(true);
-          }
-        });
-      });
     }
 
     createEnemies();
