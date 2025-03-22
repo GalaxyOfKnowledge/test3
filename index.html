@@ -1,51 +1,62 @@
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  movePlayer();
-  updateBullets();
-  updateEnemies();
-  handleCollisions();
-  requestAnimationFrame(gameLoop);
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Invaders</title>
+  <style>
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background-image: url('space-background.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
 
-function movePlayer() {
-  if (keys.left && player.x > 0) player.x -= player.speed;
-  if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
-}
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 40px;
+      text-align: center;
+    }
 
-function updateBullets() {
-  bullets.forEach((bullet, index) => {
-    bullet.y -= 5;
-    if (bullet.y < 0) bullets.splice(index, 1);
-  });
-}
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
 
-function spawnEnemies() {
-  enemies.length = 0;  // Reset enemies
-  for (let i = 0; i < 5; i++) {
-    enemies.push({ x: 100 + i * 60, y: 50, width: 30, height: 30 });
-  }
-}
+    .btn {
+      background-color: white;
+      color: black;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 10px;
+      width: 200px;
+      transition: 0.3s ease;
+    }
 
-function enemyFire() {
-  if (enemies.length > 0) {
-    let shooter = enemies[Math.floor(Math.random() * enemies.length)];
-    enemyBullets.push({ x: shooter.x + 15, y: shooter.y + 30, width: 5, height: 10 });
-  }
-}
-
-function updateEnemies() {
-  enemies.forEach(enemy => {
-    ctx.fillStyle = 'red';
-    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-  });
-}
-
-function startGame() {
-  document.querySelector('.menu').style.display = 'none';
-  canvas.style.display = 'block';
-  endgameScreen.style.display = 'none';
-  resizeCanvas();
-  spawnEnemies();
-  gameLoop();
-  setInterval(enemyFire, enemyFireRate);
-}
+    .btn:hover {
+      background-color: gray;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Space Invaders</h1>
+  <div class="menu">
+    <button class="btn" onclick="window.location.href='game.html'">Play</button>
+    <button class="btn" onclick="window.location.href='highscore.html'">Highscore</button>
+    <button class="btn" onclick="window.location.href='settings.html'">Settings</button>
+  </div>
+</body>
+</html>
