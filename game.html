@@ -29,152 +29,124 @@
 <body>
   <canvas id="gameCanvas"></canvas>
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
 
-    const player = {
-      x: canvas.width / 2 - 15,
-      y: canvas.height - 50,
-      width: 30,
-      height: 30,
-      color: 'white',
-      speed: 5,
-      bullets: [],
-      score: 0
-    };
+      const player = {
+        x: canvas.width / 2 - 15,
+        y: canvas.height - 50,
+        width: 30,
+        height: 30,
+        color: 'white',
+        speed: 5,
+        bullets: [],
+        score: 0
+      };
 
-    const enemies = [];
-    const enemyBullets = [];
-    const bulletSpeed = 5;
-    const enemyBulletSpeed = 3;
-    let gameOver = false;
-    let canShoot = true;
-    const shootCooldown = 300;
-    let keys = {};
-    let enemyDirection = 1; // Enemy movement direction
+      const enemies = [];
+      const enemyBullets = [];
+      const bulletSpeed = 5;
+      const enemyBulletSpeed = 3;
+      let gameOver = false;
+      let canShoot = true;
+      const shootCooldown = 300;
+      let keys = {};
 
-    document.addEventListener('keydown', (e) => keys[e.key] = true);
-    document.addEventListener('keyup', (e) => delete keys[e.key]);
+      document.addEventListener('keydown', (e) => keys[e.key] = true);
+      document.addEventListener('keyup', (e) => delete keys[e.key]);
 
-    function updatePlayer() {
-      if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
-      if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
-      if (keys[' '] && canShoot) shoot();
-    }
+      function updatePlayer() {
+        if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+        if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
+        if (keys[' '] && canShoot) shoot();
+      }
 
-    function drawPlayer() {
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-    }
+      function drawPlayer() {
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
 
-    function drawEnemies() {
-      let shouldReverse = false;
-      enemies.forEach(enemy => {
-        if (enemy.alive) {
-          ctx.fillStyle = 'green';
-          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-          enemy.x += enemyDirection * 2;
-          if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) shouldReverse = true;
+      function drawEnemies() {
+        enemies.forEach(enemy => {
+          if (enemy.alive) {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+          }
+        });
+      }
+
+      function drawBullets() {
+        ctx.fillStyle = 'white';
+        player.bullets.forEach((bullet, index) => {
+          ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+          bullet.y -= bulletSpeed;
+        });
+        player.bullets = player.bullets.filter(bullet => bullet.y > 0);
+      }
+
+      function shoot() {
+        player.bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y, width: 5, height: 10 });
+        canShoot = false;
+        setTimeout(() => canShoot = true, shootCooldown);
+      }
+
+      function enemyShoot() {
+        if (gameOver) return;
+        const aliveEnemies = enemies.filter(e => e.alive);
+        if (aliveEnemies.length > 0) {
+          const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+          enemyBullets.push({ x: randomEnemy.x + randomEnemy.width / 2 - 2.5, y: randomEnemy.y, width: 5, height: 10 });
         }
-      });
-      if (shouldReverse) enemyDirection *= -1;
-    }
+      }
 
-    function drawBullets() {
-      ctx.fillStyle = 'white';
-      for (let i = player.bullets.length - 1; i >= 0; i--) {
-        let bullet = player.bullets[i];
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        bullet.y -= bulletSpeed;
+      setInterval(enemyShoot, 1000);
 
-        for (let j = enemies.length - 1; j >= 0; j--) {
-          let enemy = enemies[j];
-          if (enemy.alive && bullet.y <= enemy.y + enemy.height && bullet.y + bullet.height >= enemy.y && bullet.x >= enemy.x && bullet.x <= enemy.x + enemy.width) {
-            enemy.alive = false;
-            player.bullets.splice(i, 1);
-            player.score += 100;
-            break;
+      function checkWinCondition() {
+        if (enemies.every(enemy => !enemy.alive)) {
+          endGame(true);
+        }
+      }
+
+      function endGame(win) {
+        gameOver = true;
+        window.location.href = `endgame.html?win=${win}&score=${player.score}`;
+      }
+
+      function gameLoop() {
+        if (gameOver) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updatePlayer();
+        drawPlayer();
+        drawBullets();
+        drawEnemies();
+        checkWinCondition();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function createEnemies() {
+        const enemyRows = 5;
+        const enemyCols = 8;
+        const enemySpacing = 50;
+        const startX = (canvas.width - (enemyCols * enemySpacing)) / 2;
+        for (let i = 0; i < enemyRows; i++) {
+          for (let j = 0; j < enemyCols; j++) {
+            enemies.push({
+              x: startX + j * enemySpacing,
+              y: 50 + i * enemySpacing,
+              width: 30,
+              height: 30,
+              alive: true
+            });
           }
         }
       }
-      player.bullets = player.bullets.filter(bullet => bullet.y > 0);
-    }
 
-    function shoot() {
-      player.bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y, width: 5, height: 10 });
-      canShoot = false;
-      setTimeout(() => canShoot = true, shootCooldown);
-    }
-
-    function enemyShoot() {
-      if (gameOver) return;
-      const aliveEnemies = enemies.filter(e => e.alive);
-      if (aliveEnemies.length > 0) {
-        const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
-        enemyBullets.push({ x: randomEnemy.x + randomEnemy.width / 2 - 2.5, y: randomEnemy.y, width: 5, height: 10 });
-      }
-    }
-
-    setInterval(enemyShoot, 1000);
-
-    function updateEnemyBullets() {
-      ctx.fillStyle = 'red';
-      for (let i = enemyBullets.length - 1; i >= 0; i--) {
-        let bullet = enemyBullets[i];
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        bullet.y += enemyBulletSpeed;
-        if (bullet.y > canvas.height) enemyBullets.splice(i, 1);
-        if (bullet.y + bullet.height >= player.y && bullet.x >= player.x && bullet.x <= player.x + player.width) {
-          endGame(false);
-        }
-      }
-    }
-
-    function checkWinCondition() {
-      if (enemies.every(enemy => !enemy.alive)) {
-        endGame(true);
-      }
-    }
-
-    function endGame(win) {
-      gameOver = true;
-      window.location.href = `endgame.html?win=${win}&score=${player.score}`;
-    }
-
-    function gameLoop() {
-      if (gameOver) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      updatePlayer();
-      drawPlayer();
-      drawBullets();
-      drawEnemies();
-      updateEnemyBullets();
-      checkWinCondition();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function createEnemies() {
-      const enemyRows = 5;
-      const enemyCols = 8;
-      const enemySpacing = 50;
-      const startX = (canvas.width - (enemyCols * enemySpacing)) / 2;
-      for (let i = 0; i < enemyRows; i++) {
-        for (let j = 0; j < enemyCols; j++) {
-          enemies.push({
-            x: startX + j * enemySpacing,
-            y: 50 + i * enemySpacing,
-            width: 30,
-            height: 30,
-            alive: true
-          });
-        }
-      }
-    }
-
-    createEnemies();
-    gameLoop();
+      createEnemies();
+      gameLoop();
+    });
   </script>
 </body>
 </html>
