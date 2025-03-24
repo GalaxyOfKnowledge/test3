@@ -53,6 +53,7 @@
     let canShoot = true;
     const shootCooldown = 300;
     let keys = {};
+    let enemyDirection = 1; // Enemy movement direction
 
     document.addEventListener('keydown', (e) => keys[e.key] = true);
     document.addEventListener('keyup', (e) => delete keys[e.key]);
@@ -69,28 +70,35 @@
     }
 
     function drawEnemies() {
+      let shouldReverse = false;
       enemies.forEach(enemy => {
         if (enemy.alive) {
           ctx.fillStyle = 'green';
           ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+          enemy.x += enemyDirection * 2;
+          if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) shouldReverse = true;
         }
       });
+      if (shouldReverse) enemyDirection *= -1;
     }
 
     function drawBullets() {
       ctx.fillStyle = 'white';
-      player.bullets.forEach((bullet, index) => {
+      for (let i = player.bullets.length - 1; i >= 0; i--) {
+        let bullet = player.bullets[i];
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
         bullet.y -= bulletSpeed;
-        
-        enemies.forEach(enemy => {
+
+        for (let j = enemies.length - 1; j >= 0; j--) {
+          let enemy = enemies[j];
           if (enemy.alive && bullet.y <= enemy.y + enemy.height && bullet.y + bullet.height >= enemy.y && bullet.x >= enemy.x && bullet.x <= enemy.x + enemy.width) {
             enemy.alive = false;
-            player.bullets.splice(index, 1);
+            player.bullets.splice(i, 1);
             player.score += 100;
+            break;
           }
-        });
-      });
+        }
+      }
       player.bullets = player.bullets.filter(bullet => bullet.y > 0);
     }
 
@@ -111,6 +119,19 @@
 
     setInterval(enemyShoot, 1000);
 
+    function updateEnemyBullets() {
+      ctx.fillStyle = 'red';
+      for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        let bullet = enemyBullets[i];
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        bullet.y += enemyBulletSpeed;
+        if (bullet.y > canvas.height) enemyBullets.splice(i, 1);
+        if (bullet.y + bullet.height >= player.y && bullet.x >= player.x && bullet.x <= player.x + player.width) {
+          endGame(false);
+        }
+      }
+    }
+
     function checkWinCondition() {
       if (enemies.every(enemy => !enemy.alive)) {
         endGame(true);
@@ -129,6 +150,7 @@
       drawPlayer();
       drawBullets();
       drawEnemies();
+      updateEnemyBullets();
       checkWinCondition();
       requestAnimationFrame(gameLoop);
     }
